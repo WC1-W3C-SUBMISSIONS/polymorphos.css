@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typewriter Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Courier New', 'Courier', monospace;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top header with icons */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #0f0f0f;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .icon {
+            width: 28px;
+            height: 28px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .icon:hover {
+            border-color: #666;
+            background: #1a1a1a;
+        }
+
+        /* Messages container */
+        .messages-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 70px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .messages-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            min-height: 100%;
+            justify-content: flex-end;
+        }
+
+        /* AI message - left side, no bubble, typewriter */
+        .message-ai {
+            display: flex;
+            justify-content: flex-start;
+            max-width: 100%;
+            padding-left: 10px;
+        }
+
+        .message-ai-content {
+            color: #d0d0d0;
+            font-family: 'Courier New', 'Courier', monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            text-align: left;
+            max-width: 75%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        /* User message - right side, bubble */
+        .message-user {
+            display: flex;
+            justify-content: flex-end;
+            max-width: 100%;
+            padding-right: 10px;
+        }
+
+        .message-user-content {
+            background: #1a4d2e;
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 60%;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.4;
+            animation: popIn 0.15s ease-out;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Input area */
+        .input-wrapper {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 90%;
+            max-width: 600px;
+            z-index: 50;
+        }
+
+        .input-wrapper.centered {
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .input-wrapper.bottom {
+            bottom: 20px;
+            transform: translateX(-50%);
+        }
+
+        .input-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 24px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .input-wrapper.centered .input-container {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        #messageInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e0e0e0;
+            font-family: 'Courier New', 'Courier', monospace;
+            font-size: 15px;
+            padding: 10px 0;
+        }
+
+        #messageInput::placeholder {
+            color: #666;
+        }
+
+        #sendBtn {
+            background: #1a4d2e;
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+
+        #sendBtn:hover {
+            background: #24623d;
+            transform: scale(1.05);
+        }
+
+        #sendBtn:active {
+            transform: scale(0.95);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Bottom footer with icons */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: #0f0f0f;
+            border-top: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        /* Scrollbar */
+        .messages-wrapper::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .messages-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* Typewriter cursor effect */
+        .typing-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #d0d0d0;
+            margin-left: 2px;
+            animation: blink 0.8s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="icon" title="Menu">☰</div>
+            <div class="icon" title="New Chat">+</div>
+            <div class="icon" title="History">📋</div>
+        </div>
+        <div class="header-right">
+            <div class="icon" title="Settings">⚙</div>
+            <div class="icon" title="Profile">👤</div>
+        </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="messages-wrapper">
+        <div class="messages-container" id="messagesContainer">
+            <!-- Messages will be appended here -->
+        </div>
+    </div>
+
+    <!-- Input Area (starts centered, slides to bottom) -->
+    <div class="input-wrapper centered" id="inputWrapper">
+        <div class="input-container">
+            <input
+                type="text"
+                id="messageInput"
+                placeholder="Type your message..."
+                autocomplete="off"
+            />
+            <button id="sendBtn">↑</button>
+        </div>
+    </div>
+
+    <!-- Bottom Footer -->
+    <div class="footer">
+        <div class="icon" title="Attach">📎</div>
+        <div class="icon" title="Voice">🎤</div>
+        <div class="icon" title="Emoji">😊</div>
+    </div>
+
+    <script>
+        // DOM elements
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const inputWrapper = document.getElementById('inputWrapper');
+
+        // State
+        let isFirstMessage = true;
+        let isTyping = false;
+
+        // Typewriter effect for AI messages
+        function typewriterEffect(element, text, speed = 15) {
+            return new Promise((resolve) => {
+                let i = 0;
+                isTyping = true;
+
+                // Add cursor
+                const cursor = document.createElement('span');
+                cursor.className = 'typing-cursor';
+                element.appendChild(cursor);
+
+                const interval = setInterval(() => {
+                    if (i < text.length) {
+                        // Insert character before cursor
+                        const textNode = document.createTextNode(text.charAt(i));
+                        element.insertBefore(textNode, cursor);
+                        i++;
+
+                        // Auto-scroll to bottom
+                        scrollToBottom();
+                    } else {
+                        clearInterval(interval);
+                        // Remove cursor when done
+                        cursor.remove();
+                        isTyping = false;
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
+
+        // Add AI message (left side, typewriter)
+        async function addAIMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-ai';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-ai-content';
+
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+
+            // Scroll to show new message
+            scrollToBottom();
+
+            // Type out the message
+            await typewriterEffect(contentDiv, text);
+        }
+
+        // Add user message (right side, bubble)
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-user';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-user-content';
+            contentDiv.textContent = text;
+
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+
+            // Scroll to bottom
+            scrollToBottom();
+        }
+
+        // Scroll messages to bottom
+        function scrollToBottom() {
+            const wrapper = document.querySelector('.messages-wrapper');
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }
+
+        // Handle sending message
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+
+            if (!text || isTyping) return;
+
+            // Slide input to bottom on first message
+            if (isFirstMessage) {
+                inputWrapper.classList.remove('centered');
+                inputWrapper.classList.add('bottom');
+                isFirstMessage = false;
+            }
+
+            // Add user message
+            addUserMessage(text);
+
+            // Clear input
+            messageInput.value = '';
+
+            // Simulate AI response
+            setTimeout(async () => {
+                const responses = [
+                    "Roger that. I see what you're getting at. Let me process that and give you exactly what you need.",
+                    "Copy. No bullshit, no fluff. Just the straight answer you're looking for.",
+                    "Understood. I'll cut through the noise and deliver precisely what you asked for.",
+                    "Affirmative. Let me break this down in the most direct way possible.",
+                    "Got it. Here's the real deal, no sugarcoating."
+                ];
+
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                await addAIMessage(response);
+            }, 500);
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Focus input on load
+        messageInput.focus();
+
+        // Initial greeting (optional - remove if you don't want it)
+        setTimeout(async () => {
+            await addAIMessage("System ready. What do you need?");
+        }, 500);
+    </script>
+</body>
+</html>
