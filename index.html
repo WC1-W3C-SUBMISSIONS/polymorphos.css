@@ -12,30 +12,37 @@
         }
 
         body {
-            background: #000;
+            background: #0a0a0a;
             color: #e0e0e0;
             font-family: 'Courier New', monospace;
             height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Onboarding screens */
+        .onboarding {
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .onboarding.hidden {
+            display: none;
         }
 
         .screen {
             display: none;
-            width: 100%;
-            height: 100%;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
         }
 
         .screen.active {
             display: flex;
         }
 
-        /* Loading Screen */
         .loading-text {
             font-size: 32px;
             text-align: center;
@@ -47,7 +54,6 @@
             to { opacity: 1; }
         }
 
-        /* Input Screens */
         .question {
             font-size: 24px;
             margin-bottom: 40px;
@@ -73,63 +79,222 @@
             border-bottom-color: #666;
         }
 
-        .input-field::placeholder {
-            color: transparent;
+        /* Chat Interface */
+        .chat-interface {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .chat-interface.active {
+            display: flex;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* AI message - left, typewriter, no bubble */
+        .message-ai {
+            display: flex;
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .message-ai-text {
+            color: #d0d0d0;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 80%;
+            text-align: left;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* User message - right, bubble */
+        .message-user {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+        }
+
+        .message-user-bubble {
+            background: #1a4d2e;
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 60%;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.4;
+            animation: bubblePop 0.1s ease-out;
+        }
+
+        @keyframes bubblePop {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Input area */
+        .chat-input-container {
+            padding: 20px;
+            background: #0f0f0f;
+            border-top: 1px solid #222;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        #chatInput {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            padding: 12px 20px;
+            outline: none;
+        }
+
+        #chatInput:focus {
+            border-color: #444;
+        }
+
+        #sendBtn {
+            background: #1a4d2e;
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #sendBtn:hover {
+            background: #24623d;
+        }
+
+        #sendBtn:active {
+            transform: scale(0.95);
+        }
+
+        /* Scrollbar */
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        /* Typing cursor */
+        .typing-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #d0d0d0;
+            margin-left: 2px;
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div class="screen active" id="loadingScreen">
-        <div class="loading-text">Welcome to My Wealthy Vet</div>
+    <!-- Onboarding Section -->
+    <div class="onboarding" id="onboarding">
+        <!-- Loading Screen -->
+        <div class="screen active" id="loadingScreen">
+            <div class="loading-text">Welcome to My Wealthy Vet</div>
+        </div>
+
+        <!-- Branch of Service -->
+        <div class="screen" id="branchScreen">
+            <div class="question">Branch of Service</div>
+            <input type="text" class="input-field" id="branchInput" autocomplete="off" />
+        </div>
+
+        <!-- First Name -->
+        <div class="screen" id="firstNameScreen">
+            <div class="question">First Name</div>
+            <input type="text" class="input-field" id="firstNameInput" autocomplete="off" />
+        </div>
+
+        <!-- Last Name -->
+        <div class="screen" id="lastNameScreen">
+            <div class="question">Last Name</div>
+            <input type="text" class="input-field" id="lastNameInput" autocomplete="off" />
+        </div>
     </div>
 
-    <!-- Branch of Service Screen -->
-    <div class="screen" id="branchScreen">
-        <div class="question">Branch of Service</div>
-        <input
-            type="text"
-            class="input-field"
-            id="branchInput"
-            autocomplete="off"
-        />
-    </div>
-
-    <!-- First Name Screen -->
-    <div class="screen" id="firstNameScreen">
-        <div class="question">First Name</div>
-        <input
-            type="text"
-            class="input-field"
-            id="firstNameInput"
-            autocomplete="off"
-        />
-    </div>
-
-    <!-- Last Name Screen -->
-    <div class="screen" id="lastNameScreen">
-        <div class="question">Last Name</div>
-        <input
-            type="text"
-            class="input-field"
-            id="lastNameInput"
-            autocomplete="off"
-        />
+    <!-- Chat Interface -->
+    <div class="chat-interface" id="chatInterface">
+        <div class="messages-container" id="messagesContainer">
+            <div class="messages" id="messages"></div>
+        </div>
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <input type="text" id="chatInput" autocomplete="off" />
+                <button id="sendBtn">↑</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Screens
+        // DOM - Onboarding
+        const onboarding = document.getElementById('onboarding');
         const loadingScreen = document.getElementById('loadingScreen');
         const branchScreen = document.getElementById('branchScreen');
         const firstNameScreen = document.getElementById('firstNameScreen');
         const lastNameScreen = document.getElementById('lastNameScreen');
-
-        // Inputs
         const branchInput = document.getElementById('branchInput');
         const firstNameInput = document.getElementById('firstNameInput');
         const lastNameInput = document.getElementById('lastNameInput');
 
-        // Data storage
+        // DOM - Chat
+        const chatInterface = document.getElementById('chatInterface');
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messages = document.getElementById('messages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // User data
         const userData = {
             branch: '',
             firstName: '',
@@ -142,19 +307,17 @@
             'marine corps', 'coast guard', 'coastguard', 'space force', 'spaceforce'
         ];
 
+        let isTyping = false;
+
         // Show screen
         function showScreen(screen) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             screen.classList.add('active');
-
-            // Focus input if exists
             const input = screen.querySelector('.input-field');
-            if (input) {
-                setTimeout(() => input.focus(), 100);
-            }
+            if (input) setTimeout(() => input.focus(), 100);
         }
 
-        // Reset to first name (punishment for invalid input)
+        // Reset to first name
         function resetToFirstName() {
             userData.firstName = '';
             userData.lastName = '';
@@ -163,76 +326,154 @@
             showScreen(firstNameScreen);
         }
 
-        // Validate name (only letters, no numbers or special chars)
+        // Validate name
         function isValidName(name) {
             return /^[a-zA-Z]+$/.test(name.trim());
         }
 
-        // Branch input handler
+        // Start chat interface
+        function startChat() {
+            onboarding.classList.add('hidden');
+            chatInterface.classList.add('active');
+            chatInput.focus();
+
+            // Initial AI message
+            setTimeout(() => {
+                addAIMessage("What do you need?");
+            }, 300);
+        }
+
+        // Typewriter effect
+        async function typewriterEffect(element, text, speed = 12) {
+            return new Promise((resolve) => {
+                let i = 0;
+                isTyping = true;
+
+                const cursor = document.createElement('span');
+                cursor.className = 'typing-cursor';
+                element.appendChild(cursor);
+
+                const interval = setInterval(() => {
+                    if (i < text.length) {
+                        const char = text.charAt(i);
+                        const textNode = document.createTextNode(char);
+                        element.insertBefore(textNode, cursor);
+                        i++;
+
+                        // Push messages up by scrolling
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    } else {
+                        clearInterval(interval);
+                        cursor.remove();
+                        isTyping = false;
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
+
+        // Add AI message
+        async function addAIMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-ai';
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-ai-text';
+
+            messageDiv.appendChild(textDiv);
+            messages.appendChild(messageDiv);
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            await typewriterEffect(textDiv, text);
+        }
+
+        // Add user message
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-user';
+
+            const bubbleDiv = document.createElement('div');
+            bubbleDiv.className = 'message-user-bubble';
+            bubbleDiv.textContent = text;
+
+            messageDiv.appendChild(bubbleDiv);
+            messages.appendChild(messageDiv);
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Send chat message
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text || isTyping) return;
+
+            addUserMessage(text);
+            chatInput.value = '';
+
+            // AI response
+            setTimeout(async () => {
+                const responses = [
+                    "Copy that. Processing your request now.",
+                    "Understood. Let me get that for you.",
+                    "Roger. I'll handle this.",
+                    "Got it. Working on it now.",
+                    "Affirmative. Stand by."
+                ];
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                await addAIMessage(response);
+            }, 400);
+        }
+
+        // Onboarding event listeners
         branchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const value = branchInput.value.trim().toLowerCase();
-
                 if (validBranches.includes(value)) {
                     userData.branch = value;
-                    showScreen(firstNameScreen);
-                } else {
-                    // Invalid branch, go to first name anyway
-                    showScreen(firstNameScreen);
                 }
+                showScreen(firstNameScreen);
             }
         });
 
-        // First name input handler
         firstNameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const value = firstNameInput.value.trim();
-
                 if (isValidName(value)) {
                     userData.firstName = value;
                     showScreen(lastNameScreen);
                 } else {
-                    // Invalid input - reset
                     resetToFirstName();
                 }
             }
         });
 
-        // Last name input handler
         lastNameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const value = lastNameInput.value.trim();
-
                 if (isValidName(value)) {
                     userData.lastName = value;
-
-                    // Data collected - store in localStorage
                     localStorage.setItem('veteranData', JSON.stringify(userData));
-
-                    // TODO: Proceed to next phase
-                    alert('Data collected: ' + JSON.stringify(userData));
+                    startChat();
                 } else {
-                    // Invalid input - reset to first name
                     resetToFirstName();
                 }
             }
         });
 
-        // Prevent any other keys from doing anything except typing
-        document.addEventListener('keydown', (e) => {
-            // Only allow typing, enter, and backspace/delete
-            const allowedKeys = ['Enter', 'Backspace', 'Delete', 'Tab'];
-            const isTyping = e.key.length === 1;
-
-            if (!isTyping && !allowedKeys.includes(e.key)) {
+        // Chat event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
                 e.preventDefault();
+                sendMessage();
             }
         });
 
-        // Start sequence
+        // Start onboarding
         setTimeout(() => {
             showScreen(branchScreen);
-        }, 2000); // 2 second loading screen
+        }, 2000);
     </script>
 </body>
 </html>
